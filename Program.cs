@@ -7,6 +7,12 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var dataDir = Path.Combine(Directory.GetCurrentDirectory(), "Data");
+if (!Directory.Exists(dataDir))
+{
+    Directory.CreateDirectory(dataDir);
+}
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
