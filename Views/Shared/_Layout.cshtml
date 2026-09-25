@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@{
+    var ultimaSolicitudId = Context.Session.GetInt32("UltimaSolicitudId");
+    var ultimaSolicitudMonto = Context.Session.GetString("UltimaSolicitudMonto");
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -29,6 +34,17 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Solicitudes" asp-action="Create">Nueva Solicitud</a>
                         </li>
+                        @if (ultimaSolicitudId.HasValue && !string.IsNullOrWhiteSpace(ultimaSolicitudMonto))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark"
+                                   asp-controller="Solicitudes"
+                                   asp-action="Detalle"
+                                   asp-route-id="@ultimaSolicitudId">
+                                    Ver última solicitud @ultimaSolicitudMonto
+                                </a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>

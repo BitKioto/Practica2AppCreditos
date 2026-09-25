@@ -1,7 +1,10 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Practica2AppCreditos.Data;
 using Practica2AppCreditos.Models;
 using Practica2AppCreditos.ViewModels;
@@ -13,13 +16,16 @@ public class SolicitudesController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IDistributedCache _cache;
 
     public SolicitudesController(
         ApplicationDbContext context,
-        UserManager<IdentityUser> userManager)
+        UserManager<IdentityUser> userManager,
+        IDistributedCache cache)
     {
         _context = context;
         _userManager = userManager;
+        _cache = cache;
     }
 
     public async Task<IActionResult> Index(
@@ -66,9 +72,40 @@ public class SolicitudesController : Controller
             return Challenge();
         }
 
+        var noHayFiltros = !estado.HasValue &&
+                           !montoMin.HasValue &&
+                           !montoMax.HasValue &&
+                           !fechaInicio.HasValue &&
+                           !fechaFin.HasValue;
+        var cacheKey = $"solicitudes_{usuario.Id}";
+
         var consulta = _context.SolicitudesCredito
             .AsNoTracking()
             .Where(solicitud => solicitud.Cliente.UsuarioId == usuario.Id);
+
+        if (noHayFiltros)
+        {
+            var cachedData = await _cache.GetStringAsync(cacheKey);
+
+            if (!string.IsNullOrWhiteSpace(cachedData))
+            {
+                try
+                {
+                    var solicitudesCacheadas =
+                        JsonSerializer.Deserialize<List<SolicitudCredito>>(cachedData);
+
+                    if (solicitudesCacheadas is not null)
+                    {
+                        viewModel.Solicitudes = solicitudesCacheadas;
+                        return View(viewModel);
+                    }
+                }
+                catch (JsonException)
+                {
+                    await _cache.RemoveAsync(cacheKey);
+                }
+            }
+        }
 
         if (estado.HasValue)
         {
@@ -100,11 +137,25 @@ public class SolicitudesController : Controller
             consulta = consulta.Where(solicitud => solicitud.FechaSolicitud < finExclusivo);
         }
 
-        viewModel.Solicitudes = await consulta
+        var solicitudes = await consulta
             .OrderByDescending(solicitud => solicitud.FechaSolicitud)
             .ThenByDescending(solicitud => solicitud.Id)
             .ToListAsync();
 
+        if (noHayFiltros)
+        {
+            var cacheOptions = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60)
+            };
+
+            await _cache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(solicitudes),
+                cacheOptions);
+        }
+
+        viewModel.Solicitudes = solicitudes;
         return View(viewModel);
     }
 
@@ -208,6 +259,7 @@ public class SolicitudesController : Controller
         });
 
         await _context.SaveChangesAsync();
+        await InvalidarCacheUsuario(usuario.Id);
 
         TempData["Exito"] = "Solicitud registrada con éxito.";
         return RedirectToAction(nameof(Index));
@@ -238,6 +290,11 @@ public class SolicitudesController : Controller
             return Forbid();
         }
 
+        HttpContext.Session.SetInt32("UltimaSolicitudId", solicitud.Id);
+        HttpContext.Session.SetString(
+            "UltimaSolicitudMonto",
+            solicitud.MontoSolicitado.ToString("C"));
+
         return View("Detalles", solicitud);
     }
 
@@ -246,6 +303,11 @@ public class SolicitudesController : Controller
         return _context.Clientes
             .AsNoTracking()
             .SingleOrDefaultAsync(cliente => cliente.UsuarioId == usuarioId);
+    }
+
+    private async Task InvalidarCacheUsuario(string userId)
+    {
+        await _cache.RemoveAsync($"solicitudes_{userId}");
     }
 
     private void PrepararDatosCliente(Cliente cliente)

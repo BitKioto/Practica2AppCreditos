@@ -279,3 +279,6 @@ C:\Users\USER\Desktop\practica2Programacion\Practica2AppCreditos\obj\Debug\net10
 C:\Users\USER\Desktop\practica2Programacion\Practica2AppCreditos\obj\Debug\net10.0\Practica2AppCreditos.pdb
 C:\Users\USER\Desktop\practica2Programacion\Practica2AppCreditos\obj\Debug\net10.0\Practica2AppCreditos.genruntimeconfig.cache
 C:\Users\USER\Desktop\practica2Programacion\Practica2AppCreditos\obj\Debug\net10.0\ref\Practica2AppCreditos.dll
+C:\Users\USER\Desktop\practica2Programacion\Practica2AppCreditos\bin\Debug\net10.0\Microsoft.Extensions.Caching.StackExchangeRedis.dll
+C:\Users\USER\Desktop\practica2Programacion\Practica2AppCreditos\bin\Debug\net10.0\Pipelines.Sockets.Unofficial.dll
+C:\Users\USER\Desktop\practica2Programacion\Practica2AppCreditos\bin\Debug\net10.0\StackExchange.Redis.dll
