@@ -9,7 +9,17 @@
             <h1 class="h2 mb-1">Mis Solicitudes</h1>
             <p class="text-body-secondary mb-0">Consulta y filtra tus solicitudes de crédito.</p>
         </div>
+        <a asp-controller="Solicitudes" asp-action="Create" class="btn btn-primary">
+            Nueva Solicitud
+        </a>
     </div>
+
+    @if (TempData["Exito"] is string mensajeExito && !string.IsNullOrWhiteSpace(mensajeExito))
+    {
+        <div class="alert alert-success" role="alert">
+            @mensajeExito
+        </div>
+    }
 
     <section class="card mb-4">
         <div class="card-body">
