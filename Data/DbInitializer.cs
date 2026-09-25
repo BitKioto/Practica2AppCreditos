@@ -22,7 +22,7 @@ public static class DbInitializer
 
         _ = await EnsureUserAsync(
             userManager,
-            "analista@banco.com",
+            "analista1@banco.com",
             "Analista");
 
         var cliente1 = await EnsureUserAsync(

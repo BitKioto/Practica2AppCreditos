@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Acceso denegado";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card border-danger">
+                <div class="card-body text-center p-5">
+                    <h1 class="h3 card-title text-danger mb-3">Acceso denegado</h1>
+                    <p class="mb-4">No tiene permisos para acceder a esta sección.</p>
+                    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Volver al inicio</a>
+                    @if (!string.IsNullOrWhiteSpace(returnUrl))
+                    {
+                        <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@returnUrl">Iniciar sesión</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
