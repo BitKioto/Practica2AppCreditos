@@ -13,7 +13,8 @@
           "Microsoft.AspNetCore.Identity.UI": "10.0.12",
           "Microsoft.EntityFrameworkCore.Design": "10.0.12",
           "Microsoft.EntityFrameworkCore.Sqlite": "10.0.12",
-          "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.12"
+          "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.12",
+          "RabbitMQ.Client": "7.2.2"
         },
         "runtime": {
           "Practica2AppCreditos.dll": {}
@@ -473,6 +474,14 @@
           }
         }
       },
+      "RabbitMQ.Client/7.2.2": {
+        "runtime": {
+          "lib/net8.0/RabbitMQ.Client.dll": {
+            "assemblyVersion": "7.0.0.0",
+            "fileVersion": "7.2.2.0"
+          }
+        }
+      },
       "SQLitePCLRaw.bundle_e_sqlite3/2.1.12": {
         "dependencies": {
           "SQLitePCLRaw.lib.e_sqlite3": "2.1.12",
@@ -865,6 +874,13 @@
       "sha512": "sha512-zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
       "path": "pipelines.sockets.unofficial/2.2.8",
       "hashPath": "pipelines.sockets.unofficial.2.2.8.nupkg.sha512"
+    },
+    "RabbitMQ.Client/7.2.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-k4b6RnTXpLbsF96V93ooNYxgPMnoA2tEm24B6AXNJr1mG8wwNYdA1XJtgU66L5xqeGyveS7SJriRzlX3cbqQNA==",
+      "path": "rabbitmq.client/7.2.2",
+      "hashPath": "rabbitmq.client.7.2.2.nupkg.sha512"
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.12": {
       "type": "package",

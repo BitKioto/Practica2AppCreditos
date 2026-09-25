@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Practica2AppCreditos.Data;
 using Practica2AppCreditos.Hubs;
+using Practica2AppCreditos.Services;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +62,8 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<RabbitMQProducer>();
+builder.Services.AddHostedService<SolicitudConsumerService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

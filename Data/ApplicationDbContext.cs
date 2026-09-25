@@ -10,6 +10,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<SolicitudCredito> SolicitudesCredito => Set<SolicitudCredito>();
 
+    public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -52,6 +54,31 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(solicitud => new { solicitud.ClienteId, solicitud.Estado })
                 .HasFilter("[Estado] = 0")
                 .IsUnique();
+        });
+
+        builder.Entity<Notificacion>(entity =>
+        {
+            entity.HasKey(notificacion => notificacion.Id);
+
+            entity.Property(notificacion => notificacion.MessageId)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(notificacion => notificacion.UsuarioId)
+                .IsRequired()
+                .HasMaxLength(450);
+
+            entity.Property(notificacion => notificacion.Texto)
+                .IsRequired();
+
+            entity.HasIndex(notificacion => notificacion.MessageId)
+                .IsUnique();
+
+            entity.HasIndex(notificacion => new
+            {
+                notificacion.UsuarioId,
+                notificacion.FechaProcesamientoUtc
+            });
         });
     }
 }
