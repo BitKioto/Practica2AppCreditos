@@ -63,7 +63,19 @@ builder.Services.AddSession(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<RabbitMQProducer>();
-builder.Services.AddHostedService<SolicitudConsumerService>();
+
+var rabbitMqConsumerEnabled = true;
+if (bool.TryParse(
+        builder.Configuration["RabbitMq:ConsumerEnabled"],
+        out bool configuredConsumerEnabled))
+{
+    rabbitMqConsumerEnabled = configuredConsumerEnabled;
+}
+
+if (rabbitMqConsumerEnabled)
+{
+    builder.Services.AddHostedService<SolicitudConsumerService>();
+}
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
