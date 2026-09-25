@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Practica2AppCreditos")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+958d160a03241702c1a13a12274f97c7e50d4adf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8a67015862fcf9060eb81300f4983baff671d429")]
 [assembly: System.Reflection.AssemblyProductAttribute("Practica2AppCreditos")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Practica2AppCreditos")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
