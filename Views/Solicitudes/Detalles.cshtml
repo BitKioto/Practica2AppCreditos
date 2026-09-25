@@ -1,0 +1,97 @@
+@model Practica2AppCreditos.Models.SolicitudCredito
+@{
+    ViewData["Title"] = $"Detalle de Solicitud #{Model.Id}";
+
+    var claseEstado = Model.Estado switch
+    {
+        EstadoSolicitud.Pendiente => "bg-warning text-dark",
+        EstadoSolicitud.Aprobado => "bg-success",
+        EstadoSolicitud.Rechazado => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h2 mb-1">Detalle de Solicitud #@Model.Id</h1>
+            <p class="text-body-secondary mb-0">Información de la solicitud de crédito.</p>
+        </div>
+        <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-outline-secondary">
+            Regresar al listado
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-transparent">
+            <span class="badge @claseEstado">@Model.Estado</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-12 col-lg-6">
+                    <h2 class="h5">Datos de la Solicitud</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Id</dt>
+                        <dd class="col-sm-7">@Model.Id</dd>
+
+                        <dt class="col-sm-5">Monto solicitado</dt>
+                        <dd class="col-sm-7">@Model.MontoSolicitado.ToString("C2")</dd>
+
+                        <dt class="col-sm-5">Fecha de solicitud</dt>
+                        <dd class="col-sm-7">@Model.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-5">Estado</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge @claseEstado">@Model.Estado</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Motivo de rechazo</dt>
+                        <dd class="col-sm-7">
+                            @if (Model.Estado == EstadoSolicitud.Rechazado)
+                            {
+                                @(string.IsNullOrWhiteSpace(Model.MotivoRechazo)
+                                    ? "No indicado."
+                                    : Model.MotivoRechazo)
+                            }
+                            else
+                            {
+                                <span class="text-body-secondary">No aplica.</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <h2 class="h5">Datos del Cliente</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Usuario</dt>
+                        <dd class="col-sm-7">@Model.Cliente.Usuario.UserName</dd>
+
+                        <dt class="col-sm-5">Correo</dt>
+                        <dd class="col-sm-7">@Model.Cliente.Usuario.Email</dd>
+
+                        <dt class="col-sm-5">Ingresos mensuales</dt>
+                        <dd class="col-sm-7">@Model.Cliente.IngresosMensuales.ToString("C2")</dd>
+
+                        <dt class="col-sm-5">Estado del cliente</dt>
+                        <dd class="col-sm-7">
+                            @if (Model.Cliente.Activo)
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactivo</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent text-end">
+            <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-primary">
+                Volver a Mis Solicitudes
+            </a>
+        </div>
+    </div>
+</div>

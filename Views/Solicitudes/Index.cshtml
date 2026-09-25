@@ -1,0 +1,122 @@
+@model Practica2AppCreditos.ViewModels.SolicitudesIndexViewModel
+@{
+    ViewData["Title"] = "Mis Solicitudes";
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h2 mb-1">Mis Solicitudes</h1>
+            <p class="text-body-secondary mb-0">Consulta y filtra tus solicitudes de crédito.</p>
+        </div>
+    </div>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5 card-title mb-3">Filtros</h2>
+
+            <form asp-controller="Solicitudes" asp-action="Index" method="get">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label asp-for="Estado" class="form-label">Estado</label>
+                        <select asp-for="Estado" class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="@nameof(EstadoSolicitud.Pendiente)" selected="@(Model.Estado == EstadoSolicitud.Pendiente ? "selected" : null)">Pendiente</option>
+                            <option value="@nameof(EstadoSolicitud.Aprobado)" selected="@(Model.Estado == EstadoSolicitud.Aprobado ? "selected" : null)">Aprobado</option>
+                            <option value="@nameof(EstadoSolicitud.Rechazado)" selected="@(Model.Estado == EstadoSolicitud.Rechazado ? "selected" : null)">Rechazado</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label asp-for="MontoMin" class="form-label">Monto mínimo</label>
+                        <input asp-for="MontoMin" class="form-control" type="number" min="0" step="0.01" />
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label asp-for="MontoMax" class="form-label">Monto máximo</label>
+                        <input asp-for="MontoMax" class="form-control" type="number" min="0" step="0.01" />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="FechaInicio" class="form-label">Fecha de inicio</label>
+                        <input asp-for="FechaInicio" class="form-control" type="date" />
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="FechaFin" class="form-label">Fecha de fin</label>
+                        <input asp-for="FechaFin" class="form-control" type="date" />
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-body">
+            <h2 class="h5 card-title mb-3">Resultados</h2>
+
+            @if (Model.Solicitudes.Count == 0)
+            {
+                <div class="alert alert-info mb-0" role="alert">
+                    No se encontraron solicitudes para los criterios indicados.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Id</th>
+                                <th scope="col">Monto Solicitado</th>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col" class="text-end">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var solicitud in Model.Solicitudes)
+                            {
+                                var claseEstado = solicitud.Estado switch
+                                {
+                                    EstadoSolicitud.Pendiente => "bg-warning text-dark",
+                                    EstadoSolicitud.Aprobado => "bg-success",
+                                    EstadoSolicitud.Rechazado => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+
+                                <tr>
+                                    <td>@solicitud.Id</td>
+                                    <td>@solicitud.MontoSolicitado.ToString("C2")</td>
+                                    <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="badge @claseEstado">@solicitud.Estado</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-controller="Solicitudes"
+                                           asp-action="Detalle"
+                                           asp-route-id="@solicitud.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Ver Detalle
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
