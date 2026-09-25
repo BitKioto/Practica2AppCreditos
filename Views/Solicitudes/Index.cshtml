@@ -12,7 +12,16 @@
         <a asp-controller="Solicitudes" asp-action="Create" class="btn btn-primary">
             Nueva Solicitud
         </a>
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-body-secondary">WebSocket:</span>
+            <span class="badge bg-secondary" data-signalr-status role="status" aria-live="polite">Desconectado</span>
+        </div>
     </div>
+
+    <div data-signalr-notificaciones
+         class="toast-container position-fixed bottom-0 end-0 p-3"
+         aria-live="polite"
+         aria-atomic="true"></div>
 
     @if (TempData["Exito"] is string mensajeExito && !string.IsNullOrWhiteSpace(mensajeExito))
     {
@@ -102,12 +111,13 @@
                                     _ => "bg-secondary"
                                 };
 
-                                <tr>
+                                <tr data-solicitud-id="@solicitud.Id">
                                     <td>@solicitud.Id</td>
                                     <td>@solicitud.MontoSolicitado.ToString("C2")</td>
                                     <td>@solicitud.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td>
-                                        <span class="badge @claseEstado">@solicitud.Estado</span>
+                                        <span class="badge @claseEstado" data-solicitud-estado>@solicitud.Estado</span>
+                                        <small class="d-block text-danger d-none mt-1" data-solicitud-motivo></small>
                                     </td>
                                     <td class="text-end">
                                         <a asp-controller="Solicitudes"
@@ -129,4 +139,6 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/solicitudes-signalr.js" asp-append-version="true"></script>
 }

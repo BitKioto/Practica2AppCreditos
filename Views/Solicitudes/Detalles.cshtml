@@ -20,11 +20,20 @@
         <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-outline-secondary">
             Regresar al listado
         </a>
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-body-secondary">WebSocket:</span>
+            <span class="badge bg-secondary" data-signalr-status role="status" aria-live="polite">Desconectado</span>
+        </div>
     </div>
 
-    <div class="card">
+    <div data-signalr-notificaciones
+         class="toast-container position-fixed bottom-0 end-0 p-3"
+         aria-live="polite"
+         aria-atomic="true"></div>
+
+    <div class="card" data-solicitud-id="@Model.Id" data-solicitud-detalle="true">
         <div class="card-header bg-transparent">
-            <span class="badge @claseEstado">@Model.Estado</span>
+            <span class="badge @claseEstado" data-solicitud-estado>@Model.Estado</span>
         </div>
         <div class="card-body">
             <div class="row g-4">
@@ -42,11 +51,11 @@
 
                         <dt class="col-sm-5">Estado</dt>
                         <dd class="col-sm-7">
-                            <span class="badge @claseEstado">@Model.Estado</span>
+                            <span class="badge @claseEstado" data-solicitud-estado>@Model.Estado</span>
                         </dd>
 
                         <dt class="col-sm-5">Motivo de rechazo</dt>
-                        <dd class="col-sm-7">
+                        <dd class="col-sm-7" data-solicitud-motivo>
                             @if (Model.Estado == EstadoSolicitud.Rechazado)
                             {
                                 @(string.IsNullOrWhiteSpace(Model.MotivoRechazo)
@@ -95,3 +104,8 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/solicitudes-signalr.js" asp-append-version="true"></script>
+}

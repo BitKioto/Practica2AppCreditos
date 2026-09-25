@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Practica2AppCreditos.Data;
+using Practica2AppCreditos.Hubs;
 using Practica2AppCreditos.Models;
 
 namespace Practica2AppCreditos.Controllers;
@@ -14,15 +16,18 @@ public class AnalistaController : Controller
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IDistributedCache _cache;
+    private readonly IHubContext<SolicitudesHub> _hubContext;
 
     public AnalistaController(
         ApplicationDbContext context,
         UserManager<IdentityUser> userManager,
-        IDistributedCache cache)
+        IDistributedCache cache,
+        IHubContext<SolicitudesHub> hubContext)
     {
         _context = context;
         _userManager = userManager;
         _cache = cache;
+        _hubContext = hubContext;
     }
 
     public async Task<IActionResult> Index()
@@ -71,6 +76,15 @@ public class AnalistaController : Controller
         await _context.SaveChangesAsync();
         await _cache.RemoveAsync($"solicitudes_{solicitud.Cliente.UsuarioId}");
 
+        string propietarioUserId = solicitud.Cliente.UsuarioId;
+        await _hubContext.Clients.User(propietarioUserId)
+            .SendAsync("SolicitudEstadoActualizado", new
+            {
+                solicitudId = solicitud.Id,
+                estado = solicitud.Estado.ToString(),
+                motivoRechazo = solicitud.MotivoRechazo
+            });
+
         TempData["Exito"] = "Solicitud aprobada correctamente.";
         return RedirectToAction(nameof(Index));
     }
@@ -106,6 +120,15 @@ public class AnalistaController : Controller
         solicitud.MotivoRechazo = motivoRechazo;
         await _context.SaveChangesAsync();
         await _cache.RemoveAsync($"solicitudes_{solicitud.Cliente.UsuarioId}");
+
+        string propietarioUserId = solicitud.Cliente.UsuarioId;
+        await _hubContext.Clients.User(propietarioUserId)
+            .SendAsync("SolicitudEstadoActualizado", new
+            {
+                solicitudId = solicitud.Id,
+                estado = solicitud.Estado.ToString(),
+                motivoRechazo = solicitud.MotivoRechazo
+            });
 
         TempData["Exito"] = "Solicitud rechazada correctamente.";
         return RedirectToAction(nameof(Index));

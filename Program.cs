@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Practica2AppCreditos.Data;
+using Practica2AppCreditos.Hubs;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +60,7 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -109,12 +111,14 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseWebSockets();
 app.UseSession();
 app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapHub<SolicitudesHub>("/hubs/solicitudes");
 app.MapStaticAssets();
 
 app.MapControllerRoute(
