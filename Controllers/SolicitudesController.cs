@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Practica2AppCreditos.Data;
 using Practica2AppCreditos.Models;
+using Practica2AppCreditos.Services;
 using Practica2AppCreditos.ViewModels;
 
 namespace Practica2AppCreditos.Controllers;
@@ -17,15 +18,18 @@ public class SolicitudesController : Controller
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IDistributedCache _cache;
+    private readonly RabbitMQProducer _rabbitMqProducer;
 
     public SolicitudesController(
         ApplicationDbContext context,
         UserManager<IdentityUser> userManager,
-        IDistributedCache cache)
+        IDistributedCache cache,
+        RabbitMQProducer rabbitMqProducer)
     {
         _context = context;
         _userManager = userManager;
         _cache = cache;
+        _rabbitMqProducer = rabbitMqProducer;
     }
 
     public async Task<IActionResult> Index(
@@ -250,19 +254,50 @@ public class SolicitudesController : Controller
             return View(model);
         }
 
-        _context.SolicitudesCredito.Add(new SolicitudCredito
+        var solicitud = new SolicitudCredito
         {
             ClienteId = cliente.Id,
             MontoSolicitado = model.MontoSolicitado,
             FechaSolicitud = DateTime.UtcNow,
             Estado = EstadoSolicitud.Pendiente
-        });
+        };
+
+        _context.SolicitudesCredito.Add(solicitud);
 
         await _context.SaveChangesAsync();
         await InvalidarCacheUsuario(usuario.Id);
 
+        var notificacionEncolada = await _rabbitMqProducer
+            .PublicarSolicitudRegistradaAsync(solicitud, cliente);
+
+        if (!notificacionEncolada)
+        {
+            TempData["Advertencia"] =
+                "La solicitud se registró, pero no pudo encolarse la notificación.";
+        }
+
         TempData["Exito"] = "Solicitud registrada con éxito.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Notificaciones()
+    {
+        var usuario = await _userManager.GetUserAsync(User);
+
+        if (usuario is null)
+        {
+            return Challenge();
+        }
+
+        var notificaciones = await _context.Notificaciones
+            .AsNoTracking()
+            .Where(notificacion => notificacion.UsuarioId == usuario.Id)
+            .OrderByDescending(notificacion => notificacion.FechaProcesamientoUtc)
+            .ThenByDescending(notificacion => notificacion.Id)
+            .ToListAsync();
+
+        return View(notificaciones);
     }
 
     public async Task<IActionResult> Detalle(int id)

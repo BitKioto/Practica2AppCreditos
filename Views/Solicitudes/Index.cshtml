@@ -30,6 +30,13 @@
         </div>
     }
 
+    @if (TempData["Advertencia"] is string mensajeAdvertencia && !string.IsNullOrWhiteSpace(mensajeAdvertencia))
+    {
+        <div class="alert alert-warning" role="alert">
+            @mensajeAdvertencia
+        </div>
+    }
+
     <section class="card mb-4">
         <div class="card-body">
             <h2 class="h5 card-title mb-3">Filtros</h2>
