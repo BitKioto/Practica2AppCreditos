@@ -60,6 +60,32 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/Account/AccessDenied";
+
+    // Un usuario no autenticado que intente abrir el panel recibe la misma
+    // pantalla de acceso denegado que un usuario autenticado sin el rol.
+    options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments(
+                "/Analista",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            var returnUrl = context.Request.Path.ToString() +
+                            context.Request.QueryString.ToString();
+            var accessDeniedUrl =
+                $"{context.Request.PathBase}{options.AccessDeniedPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
+
+            context.Response.Redirect(accessDeniedUrl);
+            return Task.CompletedTask;
+        }
+
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+});
+
 var app = builder.Build();
 
 if (!useRedisCache && !string.IsNullOrWhiteSpace(redisConnectionString))
@@ -85,6 +111,7 @@ else
 app.UseHttpsRedirection();
 app.UseSession();
 app.UseRouting();
+app.UseAuthentication();
 
 app.UseAuthorization();
 

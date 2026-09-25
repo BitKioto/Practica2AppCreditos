@@ -34,6 +34,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Solicitudes" asp-action="Create">Nueva Solicitud</a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Analista"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Analista" asp-action="Index">Panel Analista</a>
+                            </li>
+                        }
                         @if (ultimaSolicitudId.HasValue && !string.IsNullOrWhiteSpace(ultimaSolicitudMonto))
                         {
                             <li class="nav-item">
