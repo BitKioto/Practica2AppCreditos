@@ -108,6 +108,111 @@ public class SolicitudesController : Controller
         return View(viewModel);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var usuario = await _userManager.GetUserAsync(User);
+
+        if (usuario is null)
+        {
+            return Challenge();
+        }
+
+        var cliente = await ObtenerClienteActualAsync(usuario.Id);
+
+        if (cliente is null)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "El cliente no está activo o no está registrado.");
+            return View(new SolicitudCrearViewModel());
+        }
+
+        PrepararDatosCliente(cliente);
+
+        if (!cliente.Activo)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "El cliente no está activo o no está registrado.");
+        }
+
+        return View(new SolicitudCrearViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(SolicitudCrearViewModel model)
+    {
+        var usuario = await _userManager.GetUserAsync(User);
+
+        if (usuario is null)
+        {
+            return Challenge();
+        }
+
+        var cliente = await ObtenerClienteActualAsync(usuario.Id);
+
+        if (cliente is not null)
+        {
+            PrepararDatosCliente(cliente);
+        }
+
+        if (cliente is null || !cliente.Activo)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "El cliente no está activo para registrar solicitudes.");
+        }
+        else
+        {
+            var existeSolicitudPendiente = await _context.SolicitudesCredito
+                .AsNoTracking()
+                .AnyAsync(solicitud =>
+                    solicitud.ClienteId == cliente.Id &&
+                    solicitud.Estado == EstadoSolicitud.Pendiente);
+
+            if (existeSolicitudPendiente)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Ya cuenta con una solicitud de crédito en estado Pendiente.");
+            }
+
+            var montoMaximo = cliente.IngresosMensuales * 10m;
+
+            if (model.MontoSolicitado > montoMaximo)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    $"El monto solicitado no puede superar 10 veces sus ingresos mensuales (Máximo permitido: {montoMaximo:C}).");
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (cliente is null)
+        {
+            return View(model);
+        }
+
+        _context.SolicitudesCredito.Add(new SolicitudCredito
+        {
+            ClienteId = cliente.Id,
+            MontoSolicitado = model.MontoSolicitado,
+            FechaSolicitud = DateTime.UtcNow,
+            Estado = EstadoSolicitud.Pendiente
+        });
+
+        await _context.SaveChangesAsync();
+
+        TempData["Exito"] = "Solicitud registrada con éxito.";
+        return RedirectToAction(nameof(Index));
+    }
+
     public async Task<IActionResult> Detalle(int id)
     {
         var usuario = await _userManager.GetUserAsync(User);
@@ -134,5 +239,19 @@ public class SolicitudesController : Controller
         }
 
         return View("Detalles", solicitud);
+    }
+
+    private Task<Cliente?> ObtenerClienteActualAsync(string usuarioId)
+    {
+        return _context.Clientes
+            .AsNoTracking()
+            .SingleOrDefaultAsync(cliente => cliente.UsuarioId == usuarioId);
+    }
+
+    private void PrepararDatosCliente(Cliente cliente)
+    {
+        ViewBag.ClienteActivo = cliente.Activo;
+        ViewBag.IngresosMensuales = cliente.IngresosMensuales;
+        ViewBag.MontoMaximo = cliente.IngresosMensuales * 10m;
     }
 }

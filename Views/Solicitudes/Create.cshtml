@@ -1,0 +1,88 @@
+@model Practica2AppCreditos.Models.SolicitudCrearViewModel
+@{
+    ViewData["Title"] = "Nueva Solicitud";
+
+    var clienteActivo = ViewBag.ClienteActivo is bool activo && activo;
+    var ingresosMensuales = ViewBag.IngresosMensuales is decimal ingresos
+        ? ingresos
+        : (decimal?)null;
+    var montoMaximo = ViewBag.MontoMaximo is decimal maximo
+        ? maximo
+        : (decimal?)null;
+    var mostrarInformacion = ingresosMensuales.HasValue && montoMaximo.HasValue;
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h1 class="h2 mb-1">Nueva Solicitud</h1>
+            <p class="text-body-secondary mb-0">Registra una solicitud de crédito.</p>
+        </div>
+        <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-outline-secondary">
+            Regresar al listado
+        </a>
+    </div>
+
+    @if (TempData["Exito"] is string mensajeExito && !string.IsNullOrWhiteSpace(mensajeExito))
+    {
+        <div class="alert alert-success" role="alert">
+            @mensajeExito
+        </div>
+    }
+
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+    @if (mostrarInformacion)
+    {
+        <div class="card border-primary-subtle mb-4">
+            <div class="card-body">
+                <h2 class="h5 card-title">Información de tu perfil</h2>
+                <p class="mb-1">
+                    <strong>Sus ingresos mensuales registrados:</strong>
+                    @((ingresosMensuales ?? 0m).ToString("C"))
+                </p>
+                <p class="mb-0">
+                    <strong>Monto máximo pre-aprobable:</strong>
+                    @((montoMaximo ?? 0m).ToString("C"))
+                </p>
+            </div>
+        </div>
+    }
+
+    @if (clienteActivo)
+    {
+        <section class="card">
+            <div class="card-body">
+                <h2 class="h5 card-title mb-3">Datos de la solicitud</h2>
+
+                <form asp-controller="Solicitudes" asp-action="Create" method="post">
+                    <div class="mb-3">
+                        <label asp-for="MontoSolicitado" class="form-label"></label>
+                        <input asp-for="MontoSolicitado"
+                               class="form-control"
+                               type="number"
+                               min="0.01"
+                               step="0.01"
+                               autocomplete="off" />
+                        <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Registrar Solicitud</button>
+                        <a asp-controller="Solicitudes" asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="alert alert-warning mb-0" role="alert">
+            No puede registrar solicitudes si su cuenta de cliente no está activa.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
